@@ -23,39 +23,18 @@ struct GpuTimer
 	cudaEvent_t start;
 	cudaEvent_t stop;
 
-	GpuTimer()
-	{
-		cudaEventCreate(&start);
-		cudaEventCreate(&stop);
-	}
+	GpuTimer();
 
-	~GpuTimer()
-	{
-		cudaEventDestroy(start);
-		cudaEventDestroy(stop);
-	}
+	~GpuTimer();
 
-	void Start()
-	{
-		cudaEventRecord(start, 0);
-		cudaEventSynchronize(start);
-	}
+	void Start();
 
-	void Stop()
-	{
-		cudaEventRecord(stop, 0);
-	}
+	void Stop();
 
-	float Elapsed()
-	{
-		float elapsed;
-		cudaEventSynchronize(stop);
-		cudaEventElapsedTime(&elapsed, start, stop);
-		return elapsed;
-	}
+	float Elapsed();
 };
 
-class printGpuInfo
+class GPU_Info
 {
 public:
 	void printGpuInfo(); 

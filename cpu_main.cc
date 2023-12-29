@@ -64,7 +64,7 @@ int main()
     Loss *loss = new CrossEntropy;
     cpu_dnn.add_loss(loss);
 
-    cpu_dnn.load_trainnedFile("../data/trainned/data-trainned.bin");
+    cpu_dnn.load_trainnedFile("../data/trained/data-trained.bin");
     timer.Start();
     cpu_dnn.forward(dataset.test_data);
     timer.Stop();

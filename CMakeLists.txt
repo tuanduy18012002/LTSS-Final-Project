@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.0)
 project (myproject)
-include_directories ("${PROJECT_SOURCE_DIR}/eigen")
+include_directories ("${PROJECT_SOURCE_DIR}/third-party/eigen")
 # 查找当前目录下的所有源文件
 # 并将名称保存到 DIR_SRCS 变量
 aux_source_directory(. DIR_SRCS)

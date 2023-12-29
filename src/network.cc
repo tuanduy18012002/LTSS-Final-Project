@@ -1,20 +1,29 @@
 #include "./network.h"
 #include <fstream>
-#include "cpu/Timer.h"
+
+#ifdef PROJECT_GPU
+    #include "gpu/Timer.h"
+#else
+    #include "cpu/Timer.h"
+#endif
+
 
 void Network::forward(const Matrix &input)
 {
-    CpuTimer timer;
-    timer.Start();
+  Timer timer;
   if (layers.empty())
     return;
+  timer.Start();
   layers[0]->forward(input);
+  timer.Stop();
+  printf("Layer 0 Forward Time: %f ms\n", timer.Elapsed());
   for (int i = 1; i < layers.size(); i++)
   {
+    timer.Start();
     layers[i]->forward(layers[i - 1]->output());
+    timer.Stop();
+	printf("Layer %d Forward Time: %f ms\n", i, timer.Elapsed());
   }
-  timer.Stop();
-  printf("Cpu Forward Time: %f ms\n", timer.Elapsed());
 }
 
 void Network::backward(const Matrix &input, const Matrix &target)

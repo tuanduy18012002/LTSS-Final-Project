@@ -18,14 +18,14 @@
 		}                                                          \
 	}
 
-struct GpuTimer
+struct Timer
 {
 	cudaEvent_t start;
 	cudaEvent_t stop;
 
-	GpuTimer();
+	Timer();
 
-	~GpuTimer();
+	~Timer();
 
 	void Start();
 

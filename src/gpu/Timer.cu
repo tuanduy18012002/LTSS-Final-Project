@@ -16,30 +16,30 @@ void GPU_Info::printGpuInfo()
 	printf("****************************\n");
 }
 
-  GpuTimer::GpuTimer()
+  Timer::Timer()
 	{
 		cudaEventCreate(&start);
 		cudaEventCreate(&stop);
 	}
 
-	GpuTimer::~GpuTimer()
+	Timer::~Timer()
 	{
 		cudaEventDestroy(start);
 		cudaEventDestroy(stop);
 	}
 
-	void GpuTimer::Start()
+	void Timer::Start()
 	{
 		cudaEventRecord(start, 0);
 		cudaEventSynchronize(start);
 	}
 
-	void GpuTimer::Stop()
+	void Timer::Stop()
 	{
 		cudaEventRecord(stop, 0);
 	}
 
-	float GpuTimer::Elapsed()
+	float Timer::Elapsed()
 	{
 		float elapsed;
 		cudaEventSynchronize(stop);

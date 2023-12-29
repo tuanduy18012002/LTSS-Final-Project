@@ -65,11 +65,11 @@ int main() {
   // train & test
   SGD opt(0.001, 5e-4, 0.9, true);
   // SGD opt(0.001);
-  const int n_epoch = 10;
+  const int n_epoch = 20;
   const int batch_size = 128;
   for (int epoch = 0; epoch < n_epoch; epoch++)
   {
-    dnn.save_trainnedFile("./data/model/data-trainned.bin");
+    dnn.save_trainnedFile("../../data/trainned/data-trainned.bin");
     shuffle_data(dataset.train_data, dataset.train_labels);
     for (int start_idx = 0; start_idx < n_train; start_idx += batch_size)
     {
@@ -103,7 +103,7 @@ int main() {
     std::cout << std::endl;
   }
 
-  dnn.save_trainnedFile("./data/model/data-trainned.bin");
+  dnn.save_trainnedFile("../../data/trainned/data-trainned.bin");
   
   return 0;
 }

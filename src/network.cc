@@ -1,8 +1,11 @@
 #include "./network.h"
 #include <fstream>
+#include "cpu/Timer.h"
 
 void Network::forward(const Matrix &input)
 {
+    CpuTimer timer;
+    timer.Start();
   if (layers.empty())
     return;
   layers[0]->forward(input);
@@ -10,6 +13,8 @@ void Network::forward(const Matrix &input)
   {
     layers[i]->forward(layers[i - 1]->output());
   }
+  timer.Stop();
+  printf("Cpu Forward Time: %f ms\n", timer.Elapsed());
 }
 
 void Network::backward(const Matrix &input, const Matrix &target)
@@ -138,7 +143,7 @@ void Network::save_trainnedFile(std::string filename)
   for (int i = 0; i < n_layer; i++)
   {
     std::vector<float> layer_params = layers[i]->get_parameters();
-    int layer_p_size = layer_params.size();
+    int layer_p_size = layer_params.size();     
 
     out.write(reinterpret_cast<char *>(&layer_p_size), sizeof(int));
 

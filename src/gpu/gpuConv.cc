@@ -1,7 +1,8 @@
-#include "conv.h"
+#include "gpuConv.h"
 #include <math.h>
 #include <iostream>
-#include "../cpu/Timer.h"
+#include <memory>
+#include "../gpu/GpuModel.h"
 
 void gpuConv::init() {
     height_out = (1 + (height_in - height_kernel + 2 * pad_h) / stride);
@@ -62,12 +63,10 @@ void gpuConv::forward(const Matrix& bottom) {
     GPU_Conv gpu;
     printf("CPU - Forward Convolution Start: \n");
 
-    GpuTimer timer;
+    Timer timer;
     timer.Start();
     gpu.conv_forward_gpu(output_data, input_data, weight_data, n_sample, channel_out, channel_in, height_in, width_in, height_kernel);
     timer.Stop();
-    float duration_layer = timer.Elapsed();
-
     printf("GPU - Forward Convolution End - Time: %lf ms\n", timer.Elapsed());
 }
 

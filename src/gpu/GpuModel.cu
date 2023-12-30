@@ -133,6 +133,7 @@ void GPU_Conv::conv_forward_gpu(float* output, const float* input, const float* 
 
     // Gọi kernel
     kernel_conv_forward_gpu<<<num_blocks_in_grid, num_threads_per_block, TILE_WIDTH * TILE_WIDTH * sizeof(float)>>>(device_output, device_input, device_weight, n_sample, channel_out, channel_in, height_in, width_in, height_kernel);
+	CHECK(cudaGetLastError());
 
     // Sao chép kết quả đầu ra từ thiết bị về máy chủ
     cudaMemcpy(output, device_output, n_sample * channel_out * height_out * width_out * sizeof(float), cudaMemcpyDeviceToHost);

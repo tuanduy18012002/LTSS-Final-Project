@@ -1,14 +1,22 @@
 #include "./network.h"
 #include <fstream>
+#include "cpu/Timer.h"
 
 void Network::forward(const Matrix &input)
 {
   if (layers.empty())
     return;
+  Timer timer;
+  timer.Start();
   layers[0]->forward(input);
+  timer.Stop();
+  printf("Forward Network Layer 0 Time: %lf ms\n", timer.Elapsed());
   for (int i = 1; i < layers.size(); i++)
   {
+    timer.Start();
     layers[i]->forward(layers[i - 1]->output());
+	timer.Stop();
+	printf("Forward Network Layer %d Time: %lf ms\n", i, timer.Elapsed());
   }
 }
 

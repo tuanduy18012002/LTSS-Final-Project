@@ -1,5 +1,6 @@
-#ifndef SRC_GPU_TIMER_H
-#define SRC_GPU_TIMER_H
+#ifndef SRC_GPU_GPUMODEL_H
+#define SRC_GPU_GPUMODEL_H
+
 #pragma once
 
 #include <stdio.h>
@@ -36,7 +37,13 @@ struct Timer
 class GPU_Info
 {
 public:
-	void printGpuInfo(); 
+	void printGpuInfo();
 };
 
+class GPU_Conv
+{
+public:
+    void kernel_conv_forward_gpu(float* output, const float* input, const float* weight, const int n_sample, const int channel_out, const int channel_in, const int height_in, const int width_in, const int height_kernel);
+    void conv_forward_gpu(float* output, const float* input, const float* weight, const int n_sample, const int channel_out, const int channel_in, const int height_in, const int width_in, const int height_kernel);
+};
 #endif

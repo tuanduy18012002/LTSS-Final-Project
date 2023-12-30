@@ -19,7 +19,7 @@
 #include "src/network.h"
 #include "src/optimizer.h"
 #include "src/optimizer/sgd.h"
-#include "src/gpu/Timer.h"
+#include "src/gpu/GpuModel.h"
 
 int main()
 {

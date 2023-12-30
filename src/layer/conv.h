@@ -3,7 +3,6 @@
 
 #include <vector>
 #include "../layer.h"
-#include "../gpu/Timer.h"
 
 class Conv: public Layer {
  private:

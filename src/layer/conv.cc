@@ -1,6 +1,11 @@
 #include "conv.h"
 #include <math.h>
 #include <iostream>
+#ifdef __CUDACC__
+#include "../gpu/Timer.h"
+#else
+#include "../cpu/Timer.h"
+#endif
 
 void Conv::init() {
   height_out = (1 + (height_in - height_kernel + 2 * pad_h) / stride);

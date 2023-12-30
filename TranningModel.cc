@@ -35,41 +35,29 @@ int main() {
   std::cout << "mnist test number: " << dataset.test_labels.cols() << std::endl;
   // dnn
   Network dnn;
-  Layer* conv1 = new Conv(1, 28, 28, 6, 5, 5);
-  Layer* relu1 = new ReLU;
-  Layer* pool1 = new MaxPooling(6, 24, 24, 2, 2, 2);
-  Layer* conv2 = new Conv(6, 12, 12, 16, 5, 5);
-  Layer* relu2 = new ReLU;
-  Layer* pool2 = new MaxPooling(16, 8, 8, 2, 2, 2);
-  Layer* conv3 = new Conv(16, 4, 4, 120, 4, 4);
-  Layer* relu3 = new ReLU;
-  Layer* fc1 = new FullyConnected(120, 84);
-  Layer* relu4 = new ReLU;
-  Layer* fc2 = new FullyConnected(84, 10);
-  Layer* softmax = new Softmax;
-  dnn.add_layer(conv1);
-  dnn.add_layer(relu1);
-  dnn.add_layer(pool1);
-  dnn.add_layer(conv2);
-  dnn.add_layer(relu2);
-  dnn.add_layer(pool2);
-  dnn.add_layer(conv3);
-  dnn.add_layer(relu3);
-  dnn.add_layer(fc1);
-  dnn.add_layer(relu4);
-  dnn.add_layer(fc2);
-  dnn.add_layer(softmax);
+  dnn.add_layer(new Conv(1, 28, 28, 6, 5, 5));
+  dnn.add_layer(new MaxPooling(6, 24, 24, 2, 2, 2));
+  dnn.add_layer(new Conv(6, 12, 12, 16, 5, 5));
+  dnn.add_layer(new MaxPooling(16, 8, 8, 2, 2, 2));
+  dnn.add_layer(new FullyConnected(MaxPooling(16, 8, 8, 2, 2, 2).output_dim(), 120));
+  dnn.add_layer(new FullyConnected(120, 84));
+  dnn.add_layer(new FullyConnected(84, 10));
+  dnn.add_layer(new ReLU);
+  dnn.add_layer(new ReLU);
+  dnn.add_layer(new ReLU);
+  dnn.add_layer(new ReLU);
+  dnn.add_layer(new Softmax);
   // loss
   Loss* loss = new CrossEntropy;
   dnn.add_loss(loss);
   // train & test
   SGD opt(0.001, 5e-4, 0.9, true);
   // SGD opt(0.001);
-  const int n_epoch = 20;
+  const int n_epoch = 2;
   const int batch_size = 128;
   for (int epoch = 0; epoch < n_epoch; epoch++)
   {
-    dnn.save_trainnedFile("../../data/trained/data-trainned.bin");
+    dnn.save_trainnedFile("../../data/trained/data-trained.bin");
     shuffle_data(dataset.train_data, dataset.train_labels);
     for (int start_idx = 0; start_idx < n_train; start_idx += batch_size)
     {
@@ -103,7 +91,7 @@ int main() {
     std::cout << std::endl;
   }
 
-  dnn.save_trainnedFile("../../data/trained/data-trainned.bin");
+  dnn.save_trainnedFile("../../data/trained/data-trained.bin");
   
   return 0;
 }

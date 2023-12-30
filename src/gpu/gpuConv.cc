@@ -65,7 +65,7 @@ void gpuConv::forward(const Matrix& bottom) {
 
     Timer timer;
     timer.Start();
-    //gpu.conv_forward_gpu(output_data.get(), input_data.get(), weight_data.get(), n_sample, channel_out, channel_in, height_in, width_in, height_kernel);
+    gpu.conv_forward_gpu(output_data.get(), input_data.get(), weight_data.get(), n_sample, channel_out, channel_in, height_in, width_in, height_kernel);
     timer.Stop();
     printf("GPU - Forward Convolution End - Time: %lf ms\n", timer.Elapsed());
 }

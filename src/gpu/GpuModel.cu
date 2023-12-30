@@ -104,7 +104,7 @@ __global__ void kernel_conv_forward_gpu(float* output, const float* input, const
 
         if (output_index < n_sample * channel_out * height_out * width_out)
         {
-            output[output_index] = accumulator;
+            atomicAdd(&output[output_index], accumulator);
         }
     }
 }

@@ -1,6 +1,6 @@
 #include "GpuModel.h"
 
-#define TILE_WIDTH 16
+#define TILE_WIDTH 28
 
 void GPU_Info::printGpuInfo()
 {
@@ -51,18 +51,27 @@ float Timer::Elapsed()
 
 __global__ void kernel_conv_forward_gpu(float* output, const float* input, const float* weight, const int n_sample, const int channel_out, const int channel_in, const int height_in, const int width_in, const int height_kernel)
 {
+    // Calculate indices
     const int height_out = height_in - height_kernel + 1;
     const int width_out = width_in - height_kernel + 1;
-    
-    extern __shared__ float shared_data[];
-    
+
     int batch_idx = blockIdx.x;
     int output_feature_idx = blockIdx.y;
     int row_idx = (blockIdx.z / gridDim.z) * blockDim.y + threadIdx.y;
     int col_idx = (blockIdx.z % gridDim.z) * blockDim.x + threadIdx.x;
-    
+
     float accumulator = 0.0f;
 
+    // Shared memory for input
+    extern __shared__ float shared_data[];
+
+    // Load weight data to shared memory (assuming it fits)
+    for (int i = 0; i < channel_out * channel_in * height_kernel * height_kernel; i++) {
+        shared_data[i] = weight[i];
+    }
+    __syncthreads();
+
+    // Loop over input channels, kernel rows, and kernel columns
     for (int channel_in_idx = 0; channel_in_idx < channel_in; channel_in_idx++)
     {
         for (int kernel_row = 0; kernel_row < height_kernel; kernel_row++)
@@ -72,73 +81,65 @@ __global__ void kernel_conv_forward_gpu(float* output, const float* input, const
                 int input_row = row_idx + kernel_row;
                 int input_col = col_idx + kernel_col;
 
-                // Load input and kernel values into shared memory
-                int shared_index = threadIdx.y * blockDim.x + threadIdx.x;
-                shared_data[shared_index] = input[(batch_idx * (channel_in * height_in * width_in)) +
-                                                (channel_in_idx * (height_in * width_in)) +
-                                                (input_row * width_in) +
-                                                input_col];
+                // Load input values directly from global memory
+                int input_index = (batch_idx * (channel_in * height_in * width_in)) +
+                                  (channel_in_idx * (height_in * width_in)) +
+                                  (input_row * width_in) +
+                                  input_col;
+                float input_value = input[input_index];
 
-                __syncthreads();
-
-                // Compute convolution with shared memory
-                for (int i = 0; i < height_kernel; i++)
-                {
-                    for (int j = 0; j < height_kernel; j++)
-                    {
-                        accumulator += shared_data[(threadIdx.y + i) * blockDim.x + (threadIdx.x + j)] *
-                                       weight[(output_feature_idx * (channel_in * height_kernel * height_kernel)) +
-                                              (channel_in_idx * (height_kernel * height_kernel)) +
-                                              (kernel_row * height_kernel) +
-                                              kernel_col];
-                    }
-                }
-
-                __syncthreads();
+                // Compute convolution with shared memory (weight data)
+                accumulator += input_value * shared_data[(channel_in_idx * height_kernel + kernel_row) * height_kernel + kernel_col];
             }
         }
     }
 
+    // Check bounds before writing to output
     if (row_idx < height_out && col_idx < width_out)
     {
-        output[(batch_idx * (channel_out * height_out * width_out)) +
-               (output_feature_idx * (height_out * width_out)) +
-               (row_idx * width_out) +
-               col_idx] = accumulator;
+        int output_index = (batch_idx * (channel_out * height_out * width_out)) +
+                          (output_feature_idx * (height_out * width_out)) +
+                          (row_idx * width_out) +
+                          col_idx;
+
+        if (output_index < n_sample * channel_out * height_out * width_out)
+        {
+            output[output_index] = accumulator;
+        }
     }
 }
 
-
 void GPU_Conv::conv_forward_gpu(float* output, const float* input, const float* weight, const int n_sample, const int channel_out, const int channel_in, const int height_in, const int width_in, const int height_kernel)
 {
+    // Calculate output size
     const int height_out = height_in - height_kernel + 1;
     const int width_out = width_in - height_kernel + 1;
 
-    // Cấp phát bộ nhớ trên thiết bị
+    // Allocate device memory
     float *device_input, *device_output, *device_weight;
-    cudaMalloc((void **)&device_input, n_sample * channel_in * height_in * width_in * sizeof(float));  // Bản đồ đặc trưng đầu vào có kích thước input_channel
-    cudaMalloc((void **)&device_output, n_sample * channel_out * height_out * width_out * sizeof(float));  // Bản đồ đặc trưng đầu ra có kích thước channel_out
-    cudaMalloc((void **)&device_weight, channel_out * channel_in * height_kernel * height_kernel * sizeof(float));  // Bộ lọc kích thước input_channel * channel_out có kích thước height_kernel * height_kernel
+    cudaMalloc((void **)&device_input, n_sample * channel_in * height_in * width_in * sizeof(float));
+    cudaMalloc((void **)&device_output, n_sample * channel_out * height_out * width_out * sizeof(float));
+    cudaMalloc((void **)&device_weight, channel_out * channel_in * height_kernel * height_kernel * sizeof(float));
 
-    // Sao chép dữ liệu đầu vào và trọng số từ máy chủ đến thiết bị
+    // Copy input and weight data to device
     cudaMemcpy(device_input, input, n_sample * channel_in * height_in * width_in * sizeof(float), cudaMemcpyHostToDevice);
     cudaMemcpy(device_weight, weight, channel_out * channel_in * height_kernel * height_kernel * sizeof(float), cudaMemcpyHostToDevice);
 
-    // Đặt kích thước grid và block cho kernel và gọi kernel
+    // Set grid and block dimensions for kernel and launch it
     int height_grid = ceil(1.0 * height_out / TILE_WIDTH);
     int width_grid = ceil(1.0 * width_out / TILE_WIDTH);
     int Z = height_grid * width_grid;
     dim3 num_threads_per_block(TILE_WIDTH, TILE_WIDTH, 1);
     dim3 num_blocks_in_grid(n_sample, channel_out, Z);
 
-    // Gọi kernel
-    kernel_conv_forward_gpu<<<num_blocks_in_grid, num_threads_per_block, TILE_WIDTH * TILE_WIDTH * sizeof(float)>>>(device_output, device_input, device_weight, n_sample, channel_out, channel_in, height_in, width_in, height_kernel);
-	CHECK(cudaGetLastError());
+    // Launch kernel
+    kernel_conv_forward_gpu<<<num_blocks_in_grid, num_threads_per_block, channel_out * channel_in * height_kernel * height_kernel * sizeof(float)>>>(device_output, device_input, device_weight, n_sample, channel_out, channel_in, height_in, width_in, height_kernel);
+    CHECK(cudaGetLastError());
 
-    // Sao chép kết quả đầu ra từ thiết bị về máy chủ
+    // Copy the result back to host
     cudaMemcpy(output, device_output, n_sample * channel_out * height_out * width_out * sizeof(float), cudaMemcpyDeviceToHost);
 
-    // Giải phóng bộ nhớ trên thiết bị
+    // Free device memory
     cudaFree(device_input);
     cudaFree(device_output);
     cudaFree(device_weight);

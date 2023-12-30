@@ -62,16 +62,6 @@ __global__ void kernel_conv_forward_gpu(float* output, const float* input, const
 
     float accumulator = 0.0f;
 
-    // Shared memory for input
-    extern __shared__ float shared_data[];
-
-    // Load weight data to shared memory (assuming it fits)
-    for (int i = 0; i < channel_out * channel_in * height_kernel * height_kernel; i++) 
-    {
-        shared_data[i] = weight[i];
-    }
-    __syncthreads();
-
     // Loop over input channels, kernel rows, and kernel columns
     for (int channel_in_idx = 0; channel_in_idx < channel_in; channel_in_idx++)
     {
@@ -83,14 +73,11 @@ __global__ void kernel_conv_forward_gpu(float* output, const float* input, const
                 int input_col = col_idx + kernel_col;
 
                 // Load input values directly from global memory
-                int input_index = (batch_idx * (channel_in * height_in * width_in)) +
-                                  (channel_in_idx * (height_in * width_in)) +
-                                  (input_row * width_in) +
-                                  input_col;
+                int input_index = (batch_idx * (channel_in * height_in * width_in)) + (channel_in_idx * (height_in * width_in)) + (input_row * width_in) + input_col;
                 float input_value = input[input_index];
 
                 // Compute convolution with shared memory (weight data)
-                accumulator += input_value * shared_data[(channel_in_idx * height_kernel + kernel_row) * height_kernel + kernel_col];
+                accumulator += input_value * weight[(output_feature_idx * (channel_in * height_kernel * height_kernel)) + (channel_in_idx * (height_kernel * height_kernel)) + (kernel_row * height_kernel) + kernel_col];
             }
         }
     }
@@ -98,10 +85,7 @@ __global__ void kernel_conv_forward_gpu(float* output, const float* input, const
     // Check bounds before writing to output
     if (row_idx < height_out && col_idx < width_out)
     {
-        int output_index = (batch_idx * (channel_out * height_out * width_out)) +
-                          (output_feature_idx * (height_out * width_out)) +
-                          (row_idx * width_out) +
-                          col_idx;
+        int output_index = (batch_idx * (channel_out * height_out * width_out)) + (output_feature_idx * (height_out * width_out)) + (row_idx * width_out) + col_idx;
 
         if (output_index < n_sample * channel_out * height_out * width_out)
         {
@@ -131,7 +115,7 @@ void GPU_Conv::conv_forward_gpu(float* output, const float* input, const float* 
     dim3 num_blocks_in_grid(n_sample, channel_out, ceil(1.0 * height_out / TILE_WIDTH) * ceil(1.0 * width_out / TILE_WIDTH));
 
     // Launch kernel
-    kernel_conv_forward_gpu<<<num_blocks_in_grid, num_threads_per_block, channel_out * channel_in * height_kernel * height_kernel * sizeof(float)>>>(device_output, device_input, device_weight, n_sample, channel_out, channel_in, height_in, width_in, height_kernel);
+    kernel_conv_forward_gpu<<<num_blocks_in_grid, num_threads_per_block>>>(device_output, device_input, device_weight, n_sample, channel_out, channel_in, height_in, width_in, height_kernel);
     CHECK(cudaGetLastError());
 
     // Copy the result back to host

@@ -55,10 +55,9 @@ void gpuConv::forward(const Matrix& bottom) {
     int n_sample = bottom.cols();
     top.resize(height_out * width_out * channel_out, n_sample);
     
-    std::shared_ptr<float> output_data(const_cast<float*>(reinterpret_cast<const float*>(bottom.data())), [](float*) {});
+    std::shared_ptr<float> output_data(const_cast<float*>(reinterpret_cast<float*>(top.data())), [](float*) {});
     std::shared_ptr<const float> input_data(reinterpret_cast<const float*>(bottom.data()), [](const float*) {});
     std::shared_ptr<const float> weight_data(reinterpret_cast<const float*>(weight.data()), [](const float*) {});
-
 
     GPU_Conv gpu;
     printf("GPU - Forward Convolution Start: \n");

@@ -3,6 +3,7 @@
 
 #include <vector>
 #include "../layer.h"
+#include "../gpu/Gpu_forward.h"
 
 class Conv: public Layer {
  private:
@@ -40,6 +41,8 @@ class Conv: public Layer {
        channel_out(channel_out), height_kernel(height_kernel),
        width_kernel(width_kernel), stride(stride), pad_w(pad_w), pad_h(pad_h)
   { init(); }
+
+  void forward(const Matrix& bottom, int Blocksize);
 
   void forward(const Matrix& bottom);
   void backward(const Matrix& bottom, const Matrix& grad_top);

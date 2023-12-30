@@ -4,6 +4,8 @@ aux_source_directory(. DIR_LIB_SRCS)
 aux_source_directory(./layer DIR_LIB_SRCS)
 aux_source_directory(./loss DIR_LIB_SRCS)
 aux_source_directory(./optimizer DIR_LIB_SRCS)
+aux_source_directory(./cpu DIR_LIB_SRCS)
+aux_source_directory(./gpu DIR_LIB_SRCS)
 # 生成链接库
 add_library (MiniDNNLib ${DIR_LIB_SRCS})
 

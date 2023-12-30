@@ -26,6 +26,23 @@ void Network::forward(const Matrix &input)
   }
 }
 
+void Network::forward(const Matrix &input, int Blocksize){
+  Timer timer;
+  if (layers.empty())
+    return;
+  timer.Start();
+  layers[0]->forward(input, Blocksize);
+  timer.Stop();
+  printf("Layer 0 Forward Time: %f ms\n", timer.Elapsed());
+  // for (int i = 1; i < layers.size(); i++)
+  // {
+  //   timer.Start();
+  //   layers[i]->forward(layers[i - 1]->output());
+  //   timer.Stop();
+	// printf("Layer %d Forward Time: %f ms\n", i, timer.Elapsed());
+  // }
+}
+
 void Network::backward(const Matrix &input, const Matrix &target)
 {
   int n_layer = layers.size();

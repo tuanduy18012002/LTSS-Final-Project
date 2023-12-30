@@ -109,18 +109,18 @@ __global__ void kernel_conv_forward_gpu(float* output, const float* input, const
 
 void GPU_Conv::conv_forward_gpu(float* output, const float* input, const float* weight, const int n_sample, const int channel_out, const int channel_in, const int height_in, const int width_in, const int height_kernel)
 {
-    const int height_out = height_in - kernel_height + 1;
-    const int width_out = width_in - kernel_height + 1;
+    const int height_out = height_in - height_kernel + 1;
+    const int width_out = width_in - height_kernel + 1;
 
     // Cấp phát bộ nhớ trên thiết bị
     float *device_input, *device_output, *device_weight;
     cudaMalloc((void **)&device_input, num_samples * input_channel * height_in * width_in * sizeof(float));  // Bản đồ đặc trưng đầu vào có kích thước input_channel
     cudaMalloc((void **)&device_output, num_samples * output_channel * height_out * width_out * sizeof(float));  // Bản đồ đặc trưng đầu ra có kích thước output_channel
-    cudaMalloc((void **)&device_weight, output_channel * input_channel * kernel_height * kernel_height * sizeof(float));  // Bộ lọc kích thước input_channel * output_channel có kích thước kernel_height * kernel_height
+    cudaMalloc((void **)&device_weight, output_channel * input_channel * height_kernel * height_kernel * sizeof(float));  // Bộ lọc kích thước input_channel * output_channel có kích thước height_kernel * height_kernel
 
     // Sao chép dữ liệu đầu vào và trọng số từ máy chủ đến thiết bị
     cudaMemcpy(device_input, input_data, num_samples * input_channel * height_in * width_in * sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(device_weight, weight_data, output_channel * input_channel * kernel_height * kernel_height * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(device_weight, weight_data, output_channel * input_channel * height_kernel * height_kernel * sizeof(float), cudaMemcpyHostToDevice);
 
     // Đặt kích thước grid và block cho kernel và gọi kernel
     int height_grid = ceil(1.0 * height_out / TILE_WIDTH);
@@ -130,7 +130,7 @@ void GPU_Conv::conv_forward_gpu(float* output, const float* input, const float* 
     dim3 num_blocks_in_grid(num_samples, output_channel, Z);
 
     // Gọi kernel
-    conv_forward_kernel<<<num_blocks_in_grid, num_threads_per_block, TILE_WIDTH * TILE_WIDTH * sizeof(float)>>>(device_output, device_input, device_weight, num_samples, output_channel, input_channel, height_in, width_in, kernel_height);
+    conv_forward_kernel<<<num_blocks_in_grid, num_threads_per_block, TILE_WIDTH * TILE_WIDTH * sizeof(float)>>>(device_output, device_input, device_weight, num_samples, output_channel, input_channel, height_in, width_in, height_kernel);
 
     // Sao chép kết quả đầu ra từ thiết bị về máy chủ
     cudaMemcpy(output_data, device_output, num_samples * output_channel * height_out * width_out * sizeof(float), cudaMemcpyDeviceToHost);

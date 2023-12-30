@@ -1,4 +1,4 @@
-#include "Timer.h"
+#include "GpuModel.h"
 
 void GPU_Info::printGpuInfo()
 {

@@ -28,7 +28,6 @@ class Network {
   void add_loss(Loss* loss_in) { loss = loss_in; }
 
   void forward(const Matrix& input);
-  void forward(const Matrix& input, int Blocksize);
   void backward(const Matrix& input, const Matrix& target);
   void update(Optimizer& opt);
 

@@ -5,19 +5,16 @@
 #include <vector>
 #include "./utils.h"
 #include "./optimizer.h"
-#include "./gpu/Gpu_forward.h"
 
 class Layer {
  protected:
   Matrix top;  // layer output
   Matrix grad_bottom;  // gradient w.r.t input
-  GpuForward* gpu_fw = new GpuForward();
 
  public:
   virtual ~Layer() {}
 
   virtual void forward(const Matrix& bottom) = 0;
-  virtual void forward(const Matrix& bottom, int Blocksize) {};
   virtual void backward(const Matrix& bottom, const Matrix& grad_top) = 0;
   virtual void update(Optimizer& opt) {}
   virtual const Matrix& output() { return top; }

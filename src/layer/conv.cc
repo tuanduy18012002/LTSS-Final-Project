@@ -65,10 +65,6 @@ void Conv::forward(const Matrix& bottom) {
   }
 }
 
-void Conv::forward(const Matrix &bottom, int Blocksize){
-  gpu_fw->Conv_forward(bottom, Blocksize);
-}
-
 // col2im, used for grad_bottom
 // data_col size: Matrix (hw_out, hw_kernel * channel_in)
 // image size: Vector (height_in * width_in * channel_in)

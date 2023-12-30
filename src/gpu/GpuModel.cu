@@ -66,7 +66,8 @@ __global__ void kernel_conv_forward_gpu(float* output, const float* input, const
     extern __shared__ float shared_data[];
 
     // Load weight data to shared memory (assuming it fits)
-    for (int i = 0; i < channel_out * channel_in * height_kernel * height_kernel; i++) {
+    for (int i = 0; i < channel_out * channel_in * height_kernel * height_kernel; i++) 
+    {
         shared_data[i] = weight[i];
     }
     __syncthreads();
@@ -126,11 +127,8 @@ void GPU_Conv::conv_forward_gpu(float* output, const float* input, const float* 
     cudaMemcpy(device_weight, weight, channel_out * channel_in * height_kernel * height_kernel * sizeof(float), cudaMemcpyHostToDevice);
 
     // Set grid and block dimensions for kernel and launch it
-    int height_grid = ceil(1.0 * height_out / TILE_WIDTH);
-    int width_grid = ceil(1.0 * width_out / TILE_WIDTH);
-    int Z = height_grid * width_grid;
     dim3 num_threads_per_block(TILE_WIDTH, TILE_WIDTH, 1);
-    dim3 num_blocks_in_grid(n_sample, channel_out, Z);
+    dim3 num_blocks_in_grid(n_sample, channel_out, ceil(1.0 * height_out / TILE_WIDTH) * ceil(1.0 * width_out / TILE_WIDTH));
 
     // Launch kernel
     kernel_conv_forward_gpu<<<num_blocks_in_grid, num_threads_per_block, channel_out * channel_in * height_kernel * height_kernel * sizeof(float)>>>(device_output, device_input, device_weight, n_sample, channel_out, channel_in, height_in, width_in, height_kernel);

@@ -20,6 +20,7 @@
 #include "src/optimizer.h"
 #include "src/optimizer/sgd.h"
 #include "src/gpu/GpuModel.h"
+#include "src/gpu/gpuConv.h"
 
 int main()
 {
@@ -37,13 +38,13 @@ int main()
     std::cout << "<------------------------------>" << std::endl;
     //dnn network init
     Network gpu_dnn;
-    Layer* conv1 = new Conv(1, 28, 28, 6, 5, 5); 
+    Layer* conv1 = new gpuConv(1, 28, 28, 6, 5, 5); 
     Layer* relu1 = new ReLU;
     Layer* pool1 = new MaxPooling(6, 24, 24, 2, 2, 2);
-    Layer* conv2 = new Conv(6, 12, 12, 16, 5, 5);
+    Layer* conv2 = new gpuConv(6, 12, 12, 16, 5, 5);
     Layer* relu2 = new ReLU;
     Layer* pool2 = new MaxPooling(16, 8, 8, 2, 2, 2);
-    Layer* conv3 = new Conv(16, 4, 4, 120, 4, 4);
+    Layer* conv3 = new gpuConv(16, 4, 4, 120, 4, 4);
     Layer* relu3 = new ReLU;
     Layer* fc1 = new FullyConnected(120, 84);
     Layer* relu4 = new ReLU;

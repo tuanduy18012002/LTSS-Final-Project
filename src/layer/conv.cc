@@ -55,7 +55,6 @@ void Conv::forward(const Matrix& bottom) {
   top.resize(height_out * width_out * channel_out, n_sample);
   data_cols.resize(n_sample);
   Timer timer;
-  printf("CPU - Forward Convolution Start: \n");
   timer.Start();
   for (int i = 0; i < n_sample; i ++) {
     // im2col
@@ -68,7 +67,7 @@ void Conv::forward(const Matrix& bottom) {
     top.col(i) = Eigen::Map<Vector>(result.data(), result.size());
   }
   timer.Stop();
-  printf("CPU - Forward Convolution End - Time: %lf ms\n", timer.Elapsed());
+  printf("CPU - Forward Convolution - Layer %d - Time: %lf ms\n", channel_in == 1 ? 1 : 3, timer.Elapsed());
 }
 
 // col2im, used for grad_bottom

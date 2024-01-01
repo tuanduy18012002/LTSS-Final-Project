@@ -51,10 +51,7 @@ int main()
     cpu_dnn.add_loss(loss);
 
     cpu_dnn.load_trainnedFile("../data/trained/data-trained.bin");
-    timer.Start();
     cpu_dnn.forward(dataset.test_data);
-    timer.Stop();
-	std::cout << "CPU Forward Time: " << timer.Elapsed() << " ms" << std::endl;
     std::cout << "test accuracy: " << compute_accuracy(cpu_dnn.output(), dataset.test_labels) << std::endl;
     std::cout << "<------------------------------>" << std::endl;
     return EXIT_SUCCESS;

@@ -35,7 +35,6 @@ int main()
     std::cout << "<---------DEVICE-INFO---------->" << std::endl;
     GPU_Info gpu_info;
     gpu_info.printGpuInfo();
-    std::cout << "<------------------------------>" << std::endl;
     //dnn network init
     Network gpu_dnn;
     gpu_dnn.add_layer(new gpuConv(1, 28, 28, 6, 5, 5));
@@ -53,12 +52,21 @@ int main()
     // loss
     Loss *loss = new CrossEntropy;
     gpu_dnn.add_loss(loss);
-
     gpu_dnn.load_trainnedFile("../data/trained/data-trained.bin");
+    std::cout << "<----------VERSION--1---------->" << std::endl;
     timer.Start();
     gpu_dnn.forward(dataset.test_data);
     timer.Stop();
-	std::cout << "GPU Forward Time: " << timer.Elapsed() << " ms" << std::endl;
+    std::cout << "test accuracy: " << compute_accuracy(gpu_dnn.output(), dataset.test_labels) << std::endl;
+    std::cout << "<----------VERSION--2---------->" << std::endl;
+    timer.Start();
+    gpu_dnn.forward_2(dataset.test_data);
+    timer.Stop();
+    std::cout << "test accuracy: " << compute_accuracy(gpu_dnn.output(), dataset.test_labels) << std::endl;
+    std::cout << "<----------VERSION--3---------->" << std::endl;
+    timer.Start();
+    gpu_dnn.forward_3(dataset.test_data);
+    timer.Stop();
     std::cout << "test accuracy: " << compute_accuracy(gpu_dnn.output(), dataset.test_labels) << std::endl;
     std::cout << "<------------------------------>" << std::endl;
     return EXIT_SUCCESS;

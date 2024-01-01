@@ -44,6 +44,8 @@ public:
     }
 
     void forward(const Matrix& bottom);
+    void forward_v2(const Matrix& bottom);
+    void forward_v3(const Matrix& bottom);
     void backward(const Matrix& bottom, const Matrix& grad_top);
     void update(Optimizer& opt);
     void im2col(const Vector& image, Matrix& data_col);

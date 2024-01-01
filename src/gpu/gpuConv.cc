@@ -60,13 +60,49 @@ void gpuConv::forward(const Matrix& bottom) {
     std::shared_ptr<const float> weight_data(reinterpret_cast<const float*>(weight.data()), [](const float*) {});
 
     GPU_Conv gpu;
-    printf("GPU - Forward Convolution Start: \n");
+    printf("GPU 1 - Forward Convolution Start: \n");
 
     Timer timer;
     timer.Start();
-    gpu.conv_forward_gpu(output_data.get(), input_data.get(), weight_data.get(), n_sample, channel_out, channel_in, height_in, width_in, height_kernel);
+    gpu.conv_forward_gpu_v1(output_data.get(), input_data.get(), weight_data.get(), n_sample, channel_out, channel_in, height_in, width_in, height_kernel);
     timer.Stop();
-    printf("GPU - Forward Convolution End - Time: %lf ms\n", timer.Elapsed());
+    printf("GPU 1 - Forward Convolution End - Time: %lf ms\n", timer.Elapsed());
+}
+
+void gpuConv::forward_v2(const Matrix& bottom) {
+    int n_sample = bottom.cols();
+    top.resize(height_out * width_out * channel_out, n_sample);
+    
+    std::shared_ptr<float> output_data(const_cast<float*>(reinterpret_cast<float*>(top.data())), [](float*) {});
+    std::shared_ptr<const float> input_data(reinterpret_cast<const float*>(bottom.data()), [](const float*) {});
+    std::shared_ptr<const float> weight_data(reinterpret_cast<const float*>(weight.data()), [](const float*) {});
+
+    GPU_Conv gpu;
+    printf("GPU 2 - Forward Convolution Start: \n");
+
+    Timer timer;
+    timer.Start();
+    gpu.conv_forward_gpu_v2(output_data.get(), input_data.get(), weight_data.get(), n_sample, channel_out, channel_in, height_in, width_in, height_kernel);
+    timer.Stop();
+    printf("GPU 2 - Forward Convolution End - Time: %lf ms\n", timer.Elapsed());
+}
+
+void gpuConv::forward_v3(const Matrix& bottom) {
+    int n_sample = bottom.cols();
+    top.resize(height_out * width_out * channel_out, n_sample);
+    
+    std::shared_ptr<float> output_data(const_cast<float*>(reinterpret_cast<float*>(top.data())), [](float*) {});
+    std::shared_ptr<const float> input_data(reinterpret_cast<const float*>(bottom.data()), [](const float*) {});
+    std::shared_ptr<const float> weight_data(reinterpret_cast<const float*>(weight.data()), [](const float*) {});
+
+    GPU_Conv gpu;
+    printf("GPU 3 - Forward Convolution Start: \n");
+
+    Timer timer;
+    timer.Start();
+    gpu.conv_forward_gpu_v3(output_data.get(), input_data.get(), weight_data.get(), n_sample, channel_out, channel_in, height_in, width_in, height_kernel);
+    timer.Stop();
+    printf("GPU 3 - Forward Convolution End - Time: %lf ms\n", timer.Elapsed());
 }
 
 // col2im, used for grad_bottom

@@ -1,5 +1,5 @@
-#ifndef SRC_GPU_CONV_H_
-#define SRC_GPU_CONV_H_
+#ifndef SRC_GPU_CONV_V3_H_
+#define SRC_GPU_CONV_V3_H_
 
 #include <vector>
 #include "../layer.h"

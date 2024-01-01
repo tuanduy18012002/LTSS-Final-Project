@@ -21,6 +21,8 @@
 #include "src/optimizer/sgd.h"
 #include "src/gpu/GpuModel.h"
 #include "src/gpu/gpuConv.h"
+#include "src/gpu/gpuConv_v2.h"
+#include "src/gpu/gpuConv_v3.h"
 
 int main()
 {
@@ -49,21 +51,21 @@ int main()
     gpu_dnn.add_layer(new ReLU);
     gpu_dnn.add_layer(new ReLU);
     gpu_dnn.add_layer(new Softmax);
-        //dnn network 2 init
-        Network gpu_dnn2;
-        gpu_dnn2.add_layer(new gpuConv_v2(1, 28, 28, 6, 5, 5));
-        gpu_dnn2.add_layer(new MaxPooling(6, 24, 24, 2, 2, 2));
-        gpu_dnn2.add_layer(new gpuConv_v2(6, 12, 12, 16, 5, 5));
-        gpu_dnn2.add_layer(new MaxPooling(16, 8, 8, 2, 2, 2));
-        gpu_dnn2.add_layer(new FullyConnected(MaxPooling(16, 8, 8, 2, 2, 2).output_dim(), 120));
-        gpu_dnn2.add_layer(new FullyConnected(120, 84));
-        gpu_dnn2.add_layer(new FullyConnected(84, 10));
-        gpu_dnn2.add_layer(new ReLU);
-        gpu_dnn2.add_layer(new ReLU);
-        gpu_dnn2.add_layer(new ReLU);
-        gpu_dnn2.add_layer(new ReLU);
-        gpu_dnn2.add_layer(new Softmax);
-            //dnn network 3 init
+    //dnn network 2 init
+    Network gpu_dnn2;
+    gpu_dnn2.add_layer(new gpuConv_v2(1, 28, 28, 6, 5, 5));
+    gpu_dnn2.add_layer(new MaxPooling(6, 24, 24, 2, 2, 2));
+    gpu_dnn2.add_layer(new gpuConv_v2(6, 12, 12, 16, 5, 5));
+    gpu_dnn2.add_layer(new MaxPooling(16, 8, 8, 2, 2, 2));
+    gpu_dnn2.add_layer(new FullyConnected(MaxPooling(16, 8, 8, 2, 2, 2).output_dim(), 120));
+    gpu_dnn2.add_layer(new FullyConnected(120, 84));
+    gpu_dnn2.add_layer(new FullyConnected(84, 10));
+    gpu_dnn2.add_layer(new ReLU);
+    gpu_dnn2.add_layer(new ReLU);
+    gpu_dnn2.add_layer(new ReLU);
+    gpu_dnn2.add_layer(new ReLU);
+    gpu_dnn2.add_layer(new Softmax);
+    //dnn network 3 init
     Network gpu_dnn3;
     gpu_dnn3.add_layer(new gpuConv_v3(1, 28, 28, 6, 5, 5));
     gpu_dnn3.add_layer(new MaxPooling(6, 24, 24, 2, 2, 2));
@@ -79,23 +81,35 @@ int main()
     gpu_dnn3.add_layer(new Softmax);
     // loss
     Loss *loss = new CrossEntropy;
+    Loss *loss2 = new CrossEntropy;
+    Loss *loss3 = new CrossEntropy;
     gpu_dnn.add_loss(loss);
+    gpu_dnn2.add_loss(loss2);
+    gpu_dnn3.add_loss(loss3);
+    // load trained data
     gpu_dnn.load_trainnedFile("../data/trained/data-trained.bin");
+    gpu_dnn2.load_trainnedFile("../data/trained/data-trained.bin");
+    gpu_dnn3.load_trainnedFile("../data/trained/data-trained.bin");
+
     std::cout << "<----------VERSION--1---------->" << std::endl;
     timer.Start();
     gpu_dnn.forward(dataset.test_data);
     timer.Stop();
-    std::cout << "test accuracy: " << compute_accuracy(gpu_dnn.output(), dataset.test_labels) << std::endl;
+    std::cout << "test accuracy version 1: " << compute_accuracy(gpu_dnn.output(), dataset.test_labels) << std::endl;
+
+
     std::cout << "<----------VERSION--2---------->" << std::endl;
     timer.Start();
     gpu_dnn2.forward(dataset.test_data);
     timer.Stop();
-    std::cout << "test accuracy: " << compute_accuracy(gpu_dnn.output(), dataset.test_labels) << std::endl;
+    std::cout << "test accuracy version 2: " << compute_accuracy(gpu_dnn2.output(), dataset.test_labels) << std::endl;
+
+
     std::cout << "<----------VERSION--3---------->" << std::endl;
     timer.Start();
     gpu_dnn3.forward(dataset.test_data);
     timer.Stop();
-    std::cout << "test accuracy: " << compute_accuracy(gpu_dnn.output(), dataset.test_labels) << std::endl;
+    std::cout << "test accuracy version 3: " << compute_accuracy(gpu_dnn3.output(), dataset.test_labels) << std::endl;
     std::cout << "<------------------------------>" << std::endl;
     return EXIT_SUCCESS;
 }

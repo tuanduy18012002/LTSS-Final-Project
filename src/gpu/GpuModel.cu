@@ -96,7 +96,7 @@ __global__ void kernel_conv_forward_gpu_v1(float *output, const float *input, co
     }
 }
 
-void GPU_Conv::conv_forward_gpu_v1(float *output, const float *input, const float *weight, const int n_sample, const int channel_out, const int channel_in, const int height_in, const int width_in, const int height_kernel)
+void GPU_Conv_Forward::conv_forward_gpu_v1(float *output, const float *input, const float *weight, const int n_sample, const int channel_out, const int channel_in, const int height_in, const int width_in, const int height_kernel)
 {
     int tile_width = (channel_in == 1) ? TILE_WIDTH_L1 : TILE_WIDTH_L3;
     // Calculate output size
@@ -205,7 +205,7 @@ __global__ void kernel_conv_forward_gpu_v2(float *output, const float *input, co
     }
 }
 
-void GPU_Conv::conv_forward_gpu_v2(float *output, const float *input, const float *weight, const int n_sample, const int channel_out, const int channel_in, const int height_in, const int width_in, const int height_kernel)
+void GPU_Conv_Forward::conv_forward_gpu_v2(float *output, const float *input, const float *weight, const int n_sample, const int channel_out, const int channel_in, const int height_in, const int width_in, const int height_kernel)
 {
     int tile_width = (channel_in == 1) ? TILE_WIDTH_L1 : TILE_WIDTH_L3;
 
@@ -334,7 +334,7 @@ __global__ void kernel_conv_forward_gpu_v3(float *output, const float *input, co
     }
 }
 
-void GPU_Conv::conv_forward_gpu_v3(float *output, const float *input, const float *weight, const int n_sample, const int channel_out, const int channel_in, const int height_in, const int width_in, const int height_kernel)
+void GPU_Conv_Forward::conv_forward_gpu_v3(float *output, const float *input, const float *weight, const int n_sample, const int channel_out, const int channel_in, const int height_in, const int width_in, const int height_kernel)
 {
     int tile_width = (channel_in == 1) ? TILE_WIDTH_L1 : TILE_WIDTH_L3;
 

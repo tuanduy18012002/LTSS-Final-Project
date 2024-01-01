@@ -59,14 +59,12 @@ void gpuConv_v2::forward(const Matrix& bottom) {
     std::shared_ptr<const float> input_data(reinterpret_cast<const float*>(bottom.data()), [](const float*) {});
     std::shared_ptr<const float> weight_data(reinterpret_cast<const float*>(weight.data()), [](const float*) {});
 
-    GPU_Conv gpu;
-    printf("GPU 2 - Forward Convolution Start: \n");
-
+    GPU_Conv_Forward gpu;
     Timer timer;
     timer.Start();
     gpu.conv_forward_gpu_v2(output_data.get(), input_data.get(), weight_data.get(), n_sample, channel_out, channel_in, height_in, width_in, height_kernel);
     timer.Stop();
-    printf("GPU 2 - Forward Convolution End - Time: %lf ms\n", timer.Elapsed());
+    printf("GPU - Forward Convolution - Layer %d - Time: %lf ms\n", channel_in == 1 ? 1 : 3, timer.Elapsed());
 }
 
 // col2im, used for grad_bottom

@@ -41,7 +41,7 @@ public:
 	void printGpuInfo();
 };
 
-class GPU_Conv
+class GPU_Conv_Forward
 {
 public:
     void conv_forward_gpu_v1(float* output, const float* input, const float* weight, const int n_sample, const int channel_out, const int channel_in, const int height_in, const int width_in, const int height_kernel);

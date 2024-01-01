@@ -4,7 +4,7 @@
 #include <vector>
 #include "../layer.h"
 
-class gpuConv : public Layer {
+class gpuConv_v3 : public Layer {
 private:
     const int dim_in;
     int dim_out;
@@ -32,7 +32,7 @@ private:
     void init();
 
 public:
-    gpuConv(int channel_in, int height_in, int width_in, int channel_out,
+    gpuConv_v3(int channel_in, int height_in, int width_in, int channel_out,
         int height_kernel, int width_kernel, int stride = 1, int pad_w = 0,
         int pad_h = 0) :
         dim_in(channel_in* height_in* width_in),

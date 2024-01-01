@@ -35,7 +35,7 @@ int main()
     std::cout << "<---------DEVICE-INFO---------->" << std::endl;
     GPU_Info gpu_info;
     gpu_info.printGpuInfo();
-    //dnn network init
+    //dnn network 1 init
     Network gpu_dnn;
     gpu_dnn.add_layer(new gpuConv(1, 28, 28, 6, 5, 5));
     gpu_dnn.add_layer(new MaxPooling(6, 24, 24, 2, 2, 2));
@@ -49,6 +49,34 @@ int main()
     gpu_dnn.add_layer(new ReLU);
     gpu_dnn.add_layer(new ReLU);
     gpu_dnn.add_layer(new Softmax);
+        //dnn network 2 init
+        Network gpu_dnn2;
+        gpu_dnn2.add_layer(new gpuConv_v2(1, 28, 28, 6, 5, 5));
+        gpu_dnn2.add_layer(new MaxPooling(6, 24, 24, 2, 2, 2));
+        gpu_dnn2.add_layer(new gpuConv_v2(6, 12, 12, 16, 5, 5));
+        gpu_dnn2.add_layer(new MaxPooling(16, 8, 8, 2, 2, 2));
+        gpu_dnn2.add_layer(new FullyConnected(MaxPooling(16, 8, 8, 2, 2, 2).output_dim(), 120));
+        gpu_dnn2.add_layer(new FullyConnected(120, 84));
+        gpu_dnn2.add_layer(new FullyConnected(84, 10));
+        gpu_dnn2.add_layer(new ReLU);
+        gpu_dnn2.add_layer(new ReLU);
+        gpu_dnn2.add_layer(new ReLU);
+        gpu_dnn2.add_layer(new ReLU);
+        gpu_dnn2.add_layer(new Softmax);
+            //dnn network 3 init
+    Network gpu_dnn3;
+    gpu_dnn3.add_layer(new gpuConv_v3(1, 28, 28, 6, 5, 5));
+    gpu_dnn3.add_layer(new MaxPooling(6, 24, 24, 2, 2, 2));
+    gpu_dnn3.add_layer(new gpuConv_v3(6, 12, 12, 16, 5, 5));
+    gpu_dnn3.add_layer(new MaxPooling(16, 8, 8, 2, 2, 2));
+    gpu_dnn3.add_layer(new FullyConnected(MaxPooling(16, 8, 8, 2, 2, 2).output_dim(), 120));
+    gpu_dnn3.add_layer(new FullyConnected(120, 84));
+    gpu_dnn3.add_layer(new FullyConnected(84, 10));
+    gpu_dnn3.add_layer(new ReLU);
+    gpu_dnn3.add_layer(new ReLU);
+    gpu_dnn3.add_layer(new ReLU);
+    gpu_dnn3.add_layer(new ReLU);
+    gpu_dnn3.add_layer(new Softmax);
     // loss
     Loss *loss = new CrossEntropy;
     gpu_dnn.add_loss(loss);
@@ -60,12 +88,12 @@ int main()
     std::cout << "test accuracy: " << compute_accuracy(gpu_dnn.output(), dataset.test_labels) << std::endl;
     std::cout << "<----------VERSION--2---------->" << std::endl;
     timer.Start();
-    gpu_dnn.forward_2(dataset.test_data);
+    gpu_dnn2.forward(dataset.test_data);
     timer.Stop();
     std::cout << "test accuracy: " << compute_accuracy(gpu_dnn.output(), dataset.test_labels) << std::endl;
     std::cout << "<----------VERSION--3---------->" << std::endl;
     timer.Start();
-    gpu_dnn.forward_3(dataset.test_data);
+    gpu_dnn3.forward(dataset.test_data);
     timer.Stop();
     std::cout << "test accuracy: " << compute_accuracy(gpu_dnn.output(), dataset.test_labels) << std::endl;
     std::cout << "<------------------------------>" << std::endl;

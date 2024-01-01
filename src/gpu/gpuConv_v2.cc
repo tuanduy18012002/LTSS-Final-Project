@@ -1,10 +1,10 @@
-#include "gpuConv.h"
+#include "gpuConv_v2.h"
 #include <math.h>
 #include <iostream>
 #include <memory>
 #include "../gpu/GpuModel.h"
 
-void gpuConv::init() {
+void gpuConv_v2::init() {
     height_out = (1 + (height_in - height_kernel + 2 * pad_h) / stride);
     width_out = (1 + (width_in - width_kernel + 2 * pad_w) / stride);
     dim_out = height_out * width_out * channel_out;
@@ -22,7 +22,7 @@ void gpuConv::init() {
 // im2col, used for bottom
 // image size: Vector (height_in * width_in * channel_in)
 // data_col size: Matrix (hw_out, hw_kernel * channel_in)
-void gpuConv::im2col(const Vector& image, Matrix& data_col) {
+void gpuConv_v2::im2col(const Vector& image, Matrix& data_col) {
     int hw_in = height_in * width_in;
     int hw_kernel = height_kernel * width_kernel;
     int hw_out = height_out * width_out;
@@ -51,7 +51,7 @@ void gpuConv::im2col(const Vector& image, Matrix& data_col) {
     }
 }
 
-void gpuConv::forward(const Matrix& bottom) {
+void gpuConv_v2::forward(const Matrix& bottom) {
     int n_sample = bottom.cols();
     top.resize(height_out * width_out * channel_out, n_sample);
     
@@ -60,19 +60,19 @@ void gpuConv::forward(const Matrix& bottom) {
     std::shared_ptr<const float> weight_data(reinterpret_cast<const float*>(weight.data()), [](const float*) {});
 
     GPU_Conv gpu;
-    printf("GPU 1 - Forward Convolution Start: \n");
+    printf("GPU 2 - Forward Convolution Start: \n");
 
     Timer timer;
     timer.Start();
-    gpu.conv_forward_gpu_v1(output_data.get(), input_data.get(), weight_data.get(), n_sample, channel_out, channel_in, height_in, width_in, height_kernel);
+    gpu.conv_forward_gpu_v2(output_data.get(), input_data.get(), weight_data.get(), n_sample, channel_out, channel_in, height_in, width_in, height_kernel);
     timer.Stop();
-    printf("GPU 1 - Forward Convolution End - Time: %lf ms\n", timer.Elapsed());
+    printf("GPU 2 - Forward Convolution End - Time: %lf ms\n", timer.Elapsed());
 }
 
 // col2im, used for grad_bottom
 // data_col size: Matrix (hw_out, hw_kernel * channel_in)
 // image size: Vector (height_in * width_in * channel_in)
-void gpuConv::col2im(const Matrix& data_col, Vector& image) {
+void gpuConv_v2::col2im(const Matrix& data_col, Vector& image) {
     int hw_in = height_in * width_in;
     int hw_kernel = height_kernel * width_kernel;
     int hw_out = height_out * width_out;
@@ -101,7 +101,7 @@ void gpuConv::col2im(const Matrix& data_col, Vector& image) {
     }
 }
 
-void gpuConv::backward(const Matrix& bottom, const Matrix& grad_top) {
+void gpuConv_v2::backward(const Matrix& bottom, const Matrix& grad_top) {
     int n_sample = bottom.cols();
     grad_weight.setZero();
     grad_bias.setZero();
@@ -125,7 +125,7 @@ void gpuConv::backward(const Matrix& bottom, const Matrix& grad_top) {
     }
 }
 
-void gpuConv::update(Optimizer& opt) {
+void gpuConv_v2::update(Optimizer& opt) {
     Vector::AlignedMapType weight_vec(weight.data(), weight.size());
     Vector::AlignedMapType bias_vec(bias.data(), bias.size());
     Vector::ConstAlignedMapType grad_weight_vec(grad_weight.data(), grad_weight.size());
@@ -135,7 +135,7 @@ void gpuConv::update(Optimizer& opt) {
     opt.update(bias_vec, grad_bias_vec);
 }
 
-std::vector<float> gpuConv::get_parameters() const {
+std::vector<float> gpuConv_v2::get_parameters() const {
     std::vector<float> res(weight.size() + bias.size());
     // Copy the data of weights and bias to a long vector
     std::copy(weight.data(), weight.data() + weight.size(), res.begin());
@@ -143,14 +143,14 @@ std::vector<float> gpuConv::get_parameters() const {
     return res;
 }
 
-void gpuConv::set_parameters(const std::vector<float>& param) {
+void gpuConv_v2::set_parameters(const std::vector<float>& param) {
     if (static_cast<int>(param.size()) != weight.size() + bias.size())
         throw std::invalid_argument("Parameter size does not match");
     std::copy(param.begin(), param.begin() + weight.size(), weight.data());
     std::copy(param.begin() + weight.size(), param.end(), bias.data());
 }
 
-std::vector<float> gpuConv::get_derivatives() const {
+std::vector<float> gpuConv_v2::get_derivatives() const {
     std::vector<float> res(grad_weight.size() + grad_bias.size());
     // Copy the data of weights and bias to a long vector
     std::copy(grad_weight.data(), grad_weight.data() + grad_weight.size(), res.begin());
